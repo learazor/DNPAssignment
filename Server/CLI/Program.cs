@@ -1,13 +1,21 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using CLI.UI;
-using InMemoryRepositories;
 using RepositoryContracts;
+using FileRepositories;
 
-Console.WriteLine("Starting CLI App");
-IUserRepository userRepository = new UserInMemoryRepository();
-ICommentRepository commentRepository = new CommentInMemoryRepository();
-IPostRepository postRepository = new PostInMemoryRepository();
+namespace CLI
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            IUserRepository userRepository = new UserFileRepository();
+            IPostRepository postRepository = new PostFileRepository();
+            ICommentRepository commentRepository = new CommentFileRepository();
 
-CliApp cliApp = new CliApp(userRepository, commentRepository, postRepository);  
-await cliApp.StartAsync();
+            var app = new CliApp(userRepository, commentRepository, postRepository);
+            await app.StartAsync();
+        }
+    }
+}
