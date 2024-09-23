@@ -1,4 +1,5 @@
 using Entities;
+
 using RepositoryContracts;
 
 namespace CLI.UI;
@@ -15,7 +16,7 @@ public class CliApp
         _postRepository = postRepository;
         _commentRepository = commentRepository;
     }
-    
+
     public async Task StartAsync()
     {
         while (true)
@@ -54,8 +55,8 @@ public class CliApp
             }
         }
     }
-    
-        private async Task CreateUserAsync()
+
+    private async Task CreateUserAsync()
     {
         Console.Write("Enter username: ");
         var username = Console.ReadLine();
@@ -74,9 +75,13 @@ public class CliApp
         Console.Write("Enter body: ");
         var body = Console.ReadLine();
         Console.Write("Enter user ID: ");
-        var userId = int.Parse(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out var userId))
+        {
+            Console.WriteLine("Invalid user ID.");
+            return;
+        }
 
-        var post = new Post (title, body, userId );
+        var post = new Post(title, body, userId);
         await _postRepository.AddAsync(post);
         Console.WriteLine($"Post created with ID: {post.Id}");
     }
@@ -86,9 +91,17 @@ public class CliApp
         Console.Write("Enter comment: ");
         var body = Console.ReadLine();
         Console.Write("Enter user ID: ");
-        var userId = int.Parse(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out var userId))
+        {
+            Console.WriteLine("Invalid user ID.");
+            return;
+        }
         Console.Write("Enter post ID: ");
-        var postId = int.Parse(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out var postId))
+        {
+            Console.WriteLine("Invalid post ID.");
+            return;
+        }
 
         var comment = new Comment(body, userId, postId);
         await _commentRepository.AddAsync(comment);
@@ -98,6 +111,12 @@ public class CliApp
     private void ViewPostsOverview()
     {
         var posts = _postRepository.GetMany();
+        if (!posts.Any())
+        {
+            Console.WriteLine("No posts available.");
+            return;
+        }
+
         foreach (var post in posts)
         {
             Console.WriteLine($"ID: {post.Id}, Title: {post.Title}");
@@ -107,26 +126,38 @@ public class CliApp
     private async Task ViewSpecificPostAsync()
     {
         Console.Write("Enter post ID: ");
-        var postId = int.Parse(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out var postId))
+        {
+            Console.WriteLine("Invalid post ID.");
+            return;
+        }
 
         var post = await _postRepository.GetSingleAsync(postId);
         if (post == null)
         {
-            Console.WriteLine("Post not found");
+            Console.WriteLine("Post not found.");
             return;
         }
 
         Console.WriteLine($"Title: {post.Title}");
         Console.WriteLine($"Body: {post.Body}");
 
-        var comments = _commentRepository.GetMany();
-        foreach (var comment in comments)
+        var comments = _commentRepository.GetMany().Where(c => c.PostId == postId);
+        if (!comments.Any())
         {
-            Console.WriteLine($"Comment by User {comment.UserId}: {comment.Body}");
+            Console.WriteLine("No comments for this post.");
+        }
+        else
+        {
+            foreach (var comment in comments)
+            {
+                Console.WriteLine($"Comment by User {comment.UserId}: {comment.Body}");
+            }
         }
     }
-    
 }
+
+
 
 
     
