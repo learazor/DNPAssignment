@@ -1,7 +1,14 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@inherits LayoutComponentBase
 
-<h1>Hello, world!</h1>
+<nav>
+    <a href="/">Home</a> |
+    <a href="/add-user">Add User</a> |
+    <a href="/add-post">Add Post</a> |
+    <a href="/posts">View Posts</a>
+</nav>
 
-Welcome to your new app.
+<main>
+    @Body
+</main>

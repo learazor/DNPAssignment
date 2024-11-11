@@ -1,0 +1,47 @@
+﻿@page "/post-details/{PostId:int}"
+@using BlazorApp.Service
+@using DTOs
+@inject IPostService PostService
+@inject ICommentService CommentService
+
+<h3>@post?.Title</h3>
+<p>@post?.Body</p>
+<p>Author ID: @post?.UserId</p>
+
+<h4>Comments</h4>
+@if (comments == null)
+{
+    <p>Loading...</p>
+}
+else if (comments.Count == 0)
+{
+    <p>No comments yet.</p>
+}
+else
+{
+    <ul>
+        @foreach (var comment in comments)
+        {
+            <li>@comment.Body (User ID: @comment.UserId)</li>
+        }
+    </ul>
+}
+
+<AddComment PostId="@PostId" OnCommentAdded="LoadComments" />
+
+@code {
+    [Parameter] public int PostId { get; set; }
+    private PostDto post;
+    private List<CommentDto> comments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        post = await PostService.GetPostByIdAsync(PostId);
+        await LoadComments();
+    }
+
+    private async Task LoadComments()
+    {
+        comments = await CommentService.GetCommentsByPostIdAsync(PostId);
+    }
+}

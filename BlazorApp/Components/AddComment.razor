@@ -1,0 +1,28 @@
+﻿@using BlazorApp.Service
+@using DTOs
+@inject ICommentService CommentService
+
+<EditForm Model="newComment" OnValidSubmit="CreateComment">
+    <InputTextArea @bind-Value="newComment.Body" placeholder="Add a comment..." />
+    <button type="submit">Add Comment</button>
+</EditForm>
+
+@code {
+    [Parameter] public int PostId { get; set; }
+    [Parameter] public EventCallback OnCommentAdded { get; set; }
+
+    private CreateCommentDto newComment = new();
+
+    protected override void OnParametersSet()
+    {
+        newComment.PostId = PostId;
+        newComment.UserId = 1; // Set the UserId accordingly
+    }
+
+    private async Task CreateComment()
+    {
+        await CommentService.AddCommentAsync(newComment);
+        newComment = new CreateCommentDto { PostId = PostId, UserId = 1 };
+        await OnCommentAdded.InvokeAsync();
+    }
+}

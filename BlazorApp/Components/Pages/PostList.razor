@@ -1,0 +1,31 @@
+﻿@page "/posts"
+@using BlazorApp.Service
+@using DTOs
+@inject IPostService PostService
+
+<h3>Posts</h3>
+
+@if (posts == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <ul>
+        @foreach (var post in posts)
+        {
+            <li>
+                <a href="/post-details/@post.Id">@post.Title</a> (Author ID: @post.UserId)
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<PostDto> posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await PostService.GetPostsByUserIdAsync(1); // Fetch posts for a specific user
+    }
+}
