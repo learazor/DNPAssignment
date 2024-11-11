@@ -66,5 +66,9 @@ public class UserFileRepository : IUserRepository
         List<User> users = JsonSerializer.Deserialize<List<User>>(usersAsJson)!;
         return users.AsQueryable();
     }
-    
+
+    public Task<User> FindUserAsync(string requestUserName)
+    {
+        throw new NotImplementedException();
+    }
 }
