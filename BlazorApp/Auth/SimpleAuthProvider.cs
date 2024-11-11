@@ -18,45 +18,31 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         this.httpClient = httpClient;
         this.jsRuntime = jsRuntime;
     }
-
-    /// <summary>
-    /// Method to log in a user and store the user session in browser storage.
-    /// </summary>
+    
     public async Task LoginAsync(string userName, string password)
     {
-        // Send a login request to the server
         var response = await httpClient.PostAsJsonAsync("auth/login", new LoginRequest { UserName = userName, Password = password });
-
-        // Check if the response is successful
+        
         if (!response.IsSuccessStatusCode)
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
             throw new Exception(errorMessage);
         }
-
-        // Deserialize the response to get user details
+        
         var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
-
-        // Store the user information in session storage
+        
         string serializedData = JsonSerializer.Serialize(userDto);
         await jsRuntime.InvokeVoidAsync("sessionStorage.setItem", UserSessionKey, serializedData);
-
-        // Notify that the authentication state has changed
+        
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(CreateClaimsPrincipal(userDto))));
     }
-
-    /// <summary>
-    /// Method to log out the current user.
-    /// </summary>
+    
     public async Task LogoutAsync()
     {
         await jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", UserSessionKey);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal())));
     }
-
-    /// <summary>
-    /// Gets the current authentication state.
-    /// </summary>
+    
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var userAsJson = await jsRuntime.InvokeAsync<string>("sessionStorage.getItem", UserSessionKey);
