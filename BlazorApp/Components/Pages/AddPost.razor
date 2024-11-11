@@ -1,0 +1,23 @@
+﻿@page "/add-post"
+@attribute [Authorize]
+@using BlazorApp.Service
+@using DTOs
+@inject IPostService PostService
+
+<h3>Create New Post</h3>
+
+<EditForm Model="newPost" OnValidSubmit="CreatePost">
+    <InputText @bind-Value="newPost.Title" placeholder="Title" />
+    <InputTextArea @bind-Value="newPost.Body" placeholder="Body" />
+    <button type="submit">Create Post</button>
+</EditForm>
+
+@code {
+    private CreatePostDto newPost = new() { UserId = 1 }; // Set the UserId accordingly
+
+    private async Task CreatePost()
+    {
+        await PostService.AddPostAsync(newPost);
+        newPost = new CreatePostDto();
+    }
+}

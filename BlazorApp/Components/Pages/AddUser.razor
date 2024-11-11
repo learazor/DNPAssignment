@@ -1,0 +1,23 @@
+﻿@page "/add-user"
+@using BlazorApp.Service
+@using DTOs
+@inject IUserService UserService
+
+<h3>Add New User</h3>
+
+<EditForm Model="newUser" OnValidSubmit="CreateUser">
+    <InputText @bind-Value="newUser.UserName" placeholder="Username"/>
+    <InputText @bind-Value="newUser.Password" placeholder="Password" type="password"/>
+    <button type="submit">Add User</button>
+</EditForm>
+
+@code {
+    private CreateUserDto newUser = new();
+
+    private async Task CreateUser()
+    {
+        await UserService.AddUserAsync(newUser);
+        newUser = new();
+    }
+
+}

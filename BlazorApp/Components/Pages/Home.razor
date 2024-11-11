@@ -1,0 +1,38 @@
+﻿@page "/"
+@using BlazorApp.Auth
+@inject AuthenticationStateProvider AuthProvider
+@inject SimpleAuthProvider SimpleAuthProvider
+@inject NavigationManager Navigation
+
+<h3>Welcome to Blazor App</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <h4>Welcome, @context.User.Identity.Name!</h4>
+        <div>
+            <button class="btn btn-primary" @onclick="AddPost">Add Post</button>
+            <button class="btn btn-secondary" @onclick="ViewPosts">View Posts</button>
+            <button class="btn btn-danger" @onclick="Logout">Logout</button>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <h4>Please log in or create an account</h4>
+        <div>
+            <button class="btn btn-primary" @onclick="GoToLogin">Log In</button>
+            <button class="btn btn-secondary" @onclick="GoToCreateUser">Create User</button>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private void GoToLogin() => Navigation.NavigateTo("/login");
+    private void GoToCreateUser() => Navigation.NavigateTo("/add-user");
+    private void AddPost() => Navigation.NavigateTo("/add-post");
+    private void ViewPosts() => Navigation.NavigateTo("/posts");
+
+    private async Task Logout()
+    {
+        await SimpleAuthProvider.LogoutAsync();
+        Navigation.NavigateTo("/");
+    }
+}
