@@ -34,6 +34,13 @@ public class UsersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetUserById(int id)
     {
+        // Ensure the user is logged in
+        var loggedInUserId = HttpContext.Session.GetInt32("UserId");
+        if (loggedInUserId == null)
+        {
+            return Unauthorized("You must be logged in to access this resource.");
+        }
+
         var user = await _userRepository.GetSingleAsync(id);
         if (user == null) return NotFound();
 
@@ -49,6 +56,13 @@ public class UsersController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<UserDto>> GetAllUsers([FromQuery] string? username)
     {
+        // Ensure the user is logged in
+        var loggedInUserId = HttpContext.Session.GetInt32("UserId");
+        if (loggedInUserId == null)
+        {
+            return Unauthorized("You must be logged in to access this resource.");
+        }
+
         var users = _userRepository.GetMany();
 
         if (!string.IsNullOrEmpty(username))
@@ -63,8 +77,14 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
+        // Ensure the user is logged in
+        var loggedInUserId = HttpContext.Session.GetInt32("UserId");
+        if (loggedInUserId == null)
+        {
+            return Unauthorized("You must be logged in to perform this action.");
+        }
+
         await _userRepository.DeleteAsync(id);
         return NoContent();
     }
 }
-
