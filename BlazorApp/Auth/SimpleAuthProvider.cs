@@ -1,8 +1,5 @@
 using DTOs;
 using Microsoft.JSInterop;
-
-namespace BlazorApp.Auth;
-
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -12,13 +9,14 @@ public class SimpleAuthProvider : AuthenticationStateProvider
     private readonly HttpClient httpClient;
     private readonly IJSRuntime jsRuntime;
     private const string UserSessionKey = "currentUser";
+    private bool _isInitialized = false;
 
     public SimpleAuthProvider(HttpClient httpClient, IJSRuntime jsRuntime)
     {
         this.httpClient = httpClient;
         this.jsRuntime = jsRuntime;
     }
-    
+
     public async Task LoginAsync(string userName, string password)
     {
         var response = await httpClient.PostAsJsonAsync("auth/login", new LoginRequest { UserName = userName, Password = password });
@@ -36,15 +34,22 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(CreateClaimsPrincipal(userDto))));
     }
-    
+
     public async Task LogoutAsync()
     {
+        await EnsureInitializedAsync();
         await jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", UserSessionKey);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal())));
     }
-    
+
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        await EnsureInitializedAsync();
+
+        // Check if running in a client-side context after prerendering
+        if (!_isInitialized)
+            return new AuthenticationState(new ClaimsPrincipal());
+
         var userAsJson = await jsRuntime.InvokeAsync<string>("sessionStorage.getItem", UserSessionKey);
 
         if (string.IsNullOrEmpty(userAsJson))
@@ -54,6 +59,15 @@ public class SimpleAuthProvider : AuthenticationStateProvider
 
         var userDto = JsonSerializer.Deserialize<UserDto>(userAsJson);
         return new AuthenticationState(CreateClaimsPrincipal(userDto));
+    }
+
+    private async Task EnsureInitializedAsync()
+    {
+        if (!_isInitialized)
+        {
+            await Task.Yield(); // Ensure this runs after the first render
+            _isInitialized = true;
+        }
     }
 
     private ClaimsPrincipal CreateClaimsPrincipal(UserDto user)
