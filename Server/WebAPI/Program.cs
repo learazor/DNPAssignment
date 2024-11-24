@@ -1,4 +1,4 @@
-using FileRepositories;
+using EfcRepositories.repository;
 using RepositoryContracts;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,9 +9,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register repository services
-builder.Services.AddSingleton<IUserRepository, UserFileRepository>();
-builder.Services.AddSingleton<IPostRepository, PostFileRepository>();
-builder.Services.AddSingleton<ICommentRepository, CommentFileRepository>();
+builder.Services.AddScoped<IUserRepository, EfcUserRepository>();
+builder.Services.AddScoped<IPostRepository, EfcPostRepository>();
+builder.Services.AddScoped<ICommentRepository, EfcCommentRepository>();
 
 var app = builder.Build();
 

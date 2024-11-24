@@ -53,7 +53,7 @@ public class UsersController : ControllerBase
 
         if (!string.IsNullOrEmpty(username))
         {
-            users = users.Where(u => u.Username.Contains(username));
+            users = users.Where(u => u.Username.Contains(username, StringComparison.OrdinalIgnoreCase));
         }
 
         var userDtos = users.Select(u => new UserDto { Id = u.Id, UserName = u.Username }).ToList();
@@ -67,3 +67,4 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 }
+

@@ -19,15 +19,15 @@ public class CommentsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CommentDto>> CreateComment([FromBody] CreateCommentDto createCommentDto)
     {
-        var comment = new Comment(createCommentDto.Body, createCommentDto.UserId, createCommentDto.PostId);
+        var comment = new Comment(createCommentDto.Body, createCommentDto.PostId, createCommentDto.UserId);
         var createdComment = await _commentRepository.AddAsync(comment);
 
         var commentDto = new CommentDto
         {
             Id = createdComment.Id,
             Body = createdComment.Body,
-            UserId = createdComment.UserId,
-            PostId = createdComment.PostId
+            PostId = createdComment.PostId,
+            UserId = createdComment.UserId
         };
 
         return CreatedAtAction(nameof(GetCommentById), new { id = commentDto.Id }, commentDto);
@@ -43,34 +43,34 @@ public class CommentsController : ControllerBase
         {
             Id = comment.Id,
             Body = comment.Body,
-            UserId = comment.UserId,
-            PostId = comment.PostId
+            PostId = comment.PostId,
+            UserId = comment.UserId
         };
 
         return Ok(commentDto);
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<CommentDto>> GetAllComments([FromQuery] int? userId, [FromQuery] int? postId)
+    public ActionResult<IEnumerable<CommentDto>> GetAllComments([FromQuery] int? postId, [FromQuery] int? userId)
     {
         var comments = _commentRepository.GetMany();
-
-        if (userId.HasValue)
-        {
-            comments = comments.Where(c => c.UserId == userId.Value);
-        }
 
         if (postId.HasValue)
         {
             comments = comments.Where(c => c.PostId == postId.Value);
         }
 
+        if (userId.HasValue)
+        {
+            comments = comments.Where(c => c.UserId == userId.Value);
+        }
+
         var commentDtos = comments.Select(c => new CommentDto
         {
             Id = c.Id,
             Body = c.Body,
-            UserId = c.UserId,
-            PostId = c.PostId
+            PostId = c.PostId,
+            UserId = c.UserId
         }).ToList();
 
         return Ok(commentDtos);
@@ -83,3 +83,4 @@ public class CommentsController : ControllerBase
         return NoContent();
     }
 }
+
